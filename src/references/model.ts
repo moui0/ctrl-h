@@ -1,13 +1,8 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
-
 import * as vscode from 'vscode';
 import { SymbolItemDragAndDrop, SymbolItemEditorHighlights, SymbolItemNavigation, SymbolTreeInput, SymbolTreeModel } from '../references-view';
 import { asResourceUrl, del, getPreviewChunks, tail } from '../utils';
 
-export class ReferencesTreeInput implements SymbolTreeInput<FileItem | ResultItem> {
+export class ReferencesTreeInput implements SymbolTreeInput<FileItem | ReferenceItem> {
 
 	readonly contextValue: string;
 
@@ -36,7 +31,7 @@ export class ReferencesTreeInput implements SymbolTreeInput<FileItem | ResultIte
 
 		const provider = new ReferencesTreeDataProvider(model);
 
-		return <SymbolTreeModel<FileItem | ResultItem>>{
+		return <SymbolTreeModel<FileItem | ReferenceItem>>{
 			provider,
 			get message() { return model.message; },
 			navigation: model,
@@ -53,9 +48,9 @@ export class ReferencesTreeInput implements SymbolTreeInput<FileItem | ResultIte
 	}
 }
 
-export class ReferencesModel implements SymbolItemNavigation<FileItem | ResultItem>, SymbolItemEditorHighlights<FileItem | ResultItem>, SymbolItemDragAndDrop<FileItem | ResultItem> {
+export class ReferencesModel implements SymbolItemNavigation<FileItem | ReferenceItem>, SymbolItemEditorHighlights<FileItem | ReferenceItem>, SymbolItemDragAndDrop<FileItem | ReferenceItem> {
 
-	private _onDidChange = new vscode.EventEmitter<FileItem | ResultItem | undefined>();
+	private _onDidChange = new vscode.EventEmitter<FileItem | ReferenceItem | undefined>();
 	readonly onDidChangeTreeData = this._onDidChange.event;
 
 	readonly items: FileItem[] = [];
@@ -71,7 +66,7 @@ export class ReferencesModel implements SymbolItemNavigation<FileItem | ResultIt
 				last = new FileItem(loc.uri.with({ fragment: '' }), [], this);
 				this.items.push(last);
 			}
-			last.references.push(new ResultItem(loc, last));
+			last.references.push(new ReferenceItem(loc, last));
 		}
 	}
 
@@ -125,11 +120,11 @@ export class ReferencesModel implements SymbolItemNavigation<FileItem | ResultIt
 		}
 	}
 
-	location(item: FileItem | ResultItem) {
-		return item instanceof ResultItem ? item.location : undefined;
+	location(item: FileItem | ReferenceItem) {
+		return item instanceof ReferenceItem ? item.location : undefined;
 	}
 
-	nearest(uri: vscode.Uri, position: vscode.Position): FileItem | ResultItem | undefined {
+	nearest(uri: vscode.Uri, position: vscode.Position): FileItem | ReferenceItem | undefined {
 
 		if (this.items.length === 0) {
 			return;
@@ -144,7 +139,7 @@ export class ReferencesModel implements SymbolItemNavigation<FileItem | ResultIt
 					}
 				}
 				// (2) pick the first item after or last before the request position
-				let lastBefore: ResultItem | undefined;
+				let lastBefore: ReferenceItem | undefined;
 				for (const ref of item.references) {
 					if (ref.location.range.end.isAfter(position)) {
 						return ref;
@@ -181,15 +176,15 @@ export class ReferencesModel implements SymbolItemNavigation<FileItem | ResultIt
 		return pos;
 	}
 
-	next(item: FileItem | ResultItem): FileItem | ResultItem {
+	next(item: FileItem | ReferenceItem): FileItem | ReferenceItem {
 		return this._move(item, true) ?? item;
 	}
 
-	previous(item: FileItem | ResultItem): FileItem | ResultItem {
+	previous(item: FileItem | ReferenceItem): FileItem | ReferenceItem {
 		return this._move(item, false) ?? item;
 	}
 
-	private _move(item: FileItem | ResultItem, fwd: boolean): ResultItem | undefined {
+	private _move(item: FileItem | ReferenceItem, fwd: boolean): ReferenceItem | undefined {
 
 		const delta = fwd ? +1 : -1;
 
@@ -206,7 +201,7 @@ export class ReferencesModel implements SymbolItemNavigation<FileItem | ResultIt
 			}
 		}
 
-		if (item instanceof ResultItem) {
+		if (item instanceof ReferenceItem) {
 			const idx = item.file.references.indexOf(item) + delta;
 			if (idx < 0) {
 				return tail(_move(item.file).references);
@@ -218,12 +213,12 @@ export class ReferencesModel implements SymbolItemNavigation<FileItem | ResultIt
 		}
 	}
 
-	getEditorHighlights(_item: FileItem | ResultItem, uri: vscode.Uri): vscode.Range[] | undefined {
+	getEditorHighlights(_item: FileItem | ReferenceItem, uri: vscode.Uri): vscode.Range[] | undefined {
 		const file = this.items.find(file => file.uri.toString() === uri.toString());
 		return file?.references.map(ref => ref.location.range);
 	}
 
-	remove(item: FileItem | ResultItem) {
+	remove(item: FileItem | ReferenceItem) {
 		if (item instanceof FileItem) {
 			del(this.items, item);
 			this._onDidChange.fire(undefined);
@@ -246,7 +241,7 @@ export class ReferencesModel implements SymbolItemNavigation<FileItem | ResultIt
 		return result;
 	}
 
-	getDragUri(item: FileItem | ResultItem): vscode.Uri | undefined {
+	getDragUri(item: FileItem | ReferenceItem): vscode.Uri | undefined {
 		if (item instanceof FileItem) {
 			return item.uri;
 		} else {
@@ -255,10 +250,10 @@ export class ReferencesModel implements SymbolItemNavigation<FileItem | ResultIt
 	}
 }
 
-class ReferencesTreeDataProvider implements vscode.TreeDataProvider<FileItem | ResultItem>{
+class ReferencesTreeDataProvider implements vscode.TreeDataProvider<FileItem | ReferenceItem>{
 
 	private readonly _listener: vscode.Disposable;
-	private readonly _onDidChange = new vscode.EventEmitter<FileItem | ResultItem | undefined>();
+	private readonly _onDidChange = new vscode.EventEmitter<FileItem | ReferenceItem | undefined>();
 
 	readonly onDidChangeTreeData = this._onDidChange.event;
 
@@ -271,7 +266,7 @@ class ReferencesTreeDataProvider implements vscode.TreeDataProvider<FileItem | R
 		this._listener.dispose();
 	}
 
-	async getTreeItem(element: FileItem | ResultItem) {
+	async getTreeItem(element: FileItem | ReferenceItem) {
 		if (element instanceof FileItem) {
 			// files
 			const result = new vscode.TreeItem(element.uri);
@@ -280,8 +275,9 @@ class ReferencesTreeDataProvider implements vscode.TreeDataProvider<FileItem | R
 			result.iconPath = vscode.ThemeIcon.File;
 			result.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
 			return result;
+
 		} else {
-			// results
+			// references
 			const { range } = element.location;
 			const doc = await element.getDocument(true);
 			const { before, inside, after } = getPreviewChunks(doc, range);
@@ -293,7 +289,7 @@ class ReferencesTreeDataProvider implements vscode.TreeDataProvider<FileItem | R
 
 			const result = new vscode.TreeItem(label);
 			result.collapsibleState = vscode.TreeItemCollapsibleState.None;
-			result.contextValue = 'result-item';
+			result.contextValue = 'reference-item';
 			result.command = {
 				command: 'vscode.open',
 				title: 'Open Reference',
@@ -306,7 +302,7 @@ class ReferencesTreeDataProvider implements vscode.TreeDataProvider<FileItem | R
 		}
 	}
 
-	async getChildren(element?: FileItem | ResultItem) {
+	async getChildren(element?: FileItem | ReferenceItem) {
 		if (!element) {
 			return this._model.items;
 		}
@@ -316,8 +312,8 @@ class ReferencesTreeDataProvider implements vscode.TreeDataProvider<FileItem | R
 		return undefined;
 	}
 
-	getParent(element: FileItem | ResultItem) {
-		return element instanceof ResultItem ? element.file : undefined;
+	getParent(element: FileItem | ReferenceItem) {
+		return element instanceof ReferenceItem ? element.file : undefined;
 	}
 }
 
@@ -325,7 +321,7 @@ export class FileItem {
 
 	constructor(
 		readonly uri: vscode.Uri,
-		readonly references: Array<ResultItem>,
+		readonly references: Array<ReferenceItem>,
 		readonly model: ReferencesModel
 	) { }
 
@@ -344,7 +340,7 @@ export class FileItem {
 	}
 }
 
-export class ResultItem {
+export class ReferenceItem {
 
 	private _document: Thenable<vscode.TextDocument> | undefined;
 
@@ -362,7 +358,7 @@ export class ResultItem {
 			const next = this.file.model.next(this.file);
 			if (next instanceof FileItem && next !== this.file) {
 				vscode.workspace.openTextDocument(next.uri);
-			} else if (next instanceof ResultItem) {
+			} else if (next instanceof ReferenceItem) {
 				vscode.workspace.openTextDocument(next.location.uri);
 			}
 		}

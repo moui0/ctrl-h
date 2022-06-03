@@ -1,11 +1,6 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
-
 import * as vscode from 'vscode';
 import { SymbolsTree } from '../tree';
-import { FileItem, ResultItem, ReferencesModel, ReferencesTreeInput } from './model';
+import { FileItem, ReferenceItem, ReferencesModel, ReferencesTreeInput } from './model';
 
 export function register(tree: SymbolsTree, context: vscode.ExtensionContext): void {
 
@@ -18,7 +13,6 @@ export function register(tree: SymbolsTree, context: vscode.ExtensionContext): v
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand('references-view.findReferences', () => findLocations('References', 'vscode.executeReferenceProvider')),
-		vscode.commands.registerCommand('references-view.findImplementations', () => findLocations('Implementations', 'vscode.executeImplementationProvider')),
 		// --- legacy name
 		vscode.commands.registerCommand('references-view.find', (...args: any[]) => vscode.commands.executeCommand('references-view.findReferences', ...args)),
 		vscode.commands.registerCommand('references-view.removeReferenceItem', removeReferenceItem),
@@ -53,28 +47,28 @@ export function register(tree: SymbolsTree, context: vscode.ExtensionContext): v
 	updateShowReferences();
 }
 
-const copyAllCommand = async (item: ResultItem | FileItem | unknown) => {
-	if (item instanceof ResultItem) {
+const copyAllCommand = async (item: ReferenceItem | FileItem | unknown) => {
+	if (item instanceof ReferenceItem) {
 		copyCommand(item.file.model);
 	} else if (item instanceof FileItem) {
 		copyCommand(item.model);
 	}
 };
 
-function removeReferenceItem(item: FileItem | ResultItem | unknown) {
+function removeReferenceItem(item: FileItem | ReferenceItem | unknown) {
 	if (item instanceof FileItem) {
 		item.remove();
-	} else if (item instanceof ResultItem) {
+	} else if (item instanceof ReferenceItem) {
 		item.remove();
 	}
 }
 
 
-async function copyCommand(item: ReferencesModel | ResultItem | FileItem | unknown) {
+async function copyCommand(item: ReferencesModel | ReferenceItem | FileItem | unknown) {
 	let val: string | undefined;
 	if (item instanceof ReferencesModel) {
 		val = await item.asCopyText();
-	} else if (item instanceof ResultItem) {
+	} else if (item instanceof ReferenceItem) {
 		val = await item.asCopyText();
 	} else if (item instanceof FileItem) {
 		val = await item.asCopyText();

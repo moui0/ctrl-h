@@ -12,9 +12,6 @@
 	"activationEvents": [
 		"onCommand:references-view.find",
 		"onCommand:references-view.findReferences",
-		"onCommand:references-view.findImplementations",
-		"onCommand:references-view.showCallHierarchy",
-		"onCommand:references-view.showTypeHierarchy",
 		"onCommand:editor.action.showReferences",
 		"onView:references-view.tree"
 	],
@@ -23,17 +20,17 @@
 		"configuration": {
 		"properties": {
 			"references.preferredLocation": {
-			"description": "Controls whether 'Peek References' or 'Find References' is invoked when selecting code lens references",
-			"type": "string",
-			"default": "peek",
-			"enum": [
-				"peek",
-				"view"
-			],
-			"enumDescriptions": [
-				"Show references in peek editor.",
-				"Show references in separate view."
-			]
+        "description": "Controls whether 'Peek References' or 'Find References' is invoked when selecting code lens references",
+        "type": "string",
+        "default": "peek",
+        "enum": [
+          "peek",
+          "view"
+        ],
+        "enumDescriptions": [
+          "Show references in peek editor.",
+          "Show references in separate view."
+        ]
 			}
 		}
 		},
@@ -50,121 +47,72 @@
 		"references-view": [
 			{
 				"id": "references-view.tree",
-				"name": "Results",
+				"name": "References",
 				"when": "reference-list.isActive"
 			}
 		]
 		},
 		"commands": [
-		{
-			"command": "references-view.findReferences",
-			"title": "Find All References",
-			"category": "References"
-		},
-		{
-			"command": "references-view.findImplementations",
-			"title": "Find All Implementations",
-			"category": "References"
-		},
-		{
-			"command": "references-view.clearHistory",
-			"title": "Clear History",
-			"category": "References",
-			"icon": "$(clear-all)"
-		},
-		{
-			"command": "references-view.clear",
-			"title": "Clear",
-			"category": "References",
-			"icon": "$(clear-all)"
-		},
-		{
-			"command": "references-view.refresh",
-			"title": "Refresh",
-			"category": "References",
-			"icon": "$(refresh)"
-		},
-		{
-			"command": "references-view.pickFromHistory",
-			"title": "Show History",
-			"category": "References"
-		},
-		{
-			"command": "references-view.removeReferenceItem",
-			"title": "Dismiss",
-			"icon": "$(close)"
-		},
-		{
-			"command": "references-view.copy",
-			"title": "Copy"
-		},
-		{
-			"command": "references-view.copyAll",
-			"title": "Copy All"
-		},
-		{
-			"command": "references-view.copyPath",
-			"title": "Copy Path"
-		},
-		{
-			"command": "references-view.refind",
-			"title": "Rerun",
-			"icon": "$(refresh)"
-		},
-		{
-			"command": "references-view.showCallHierarchy",
-			"title": "Show Call Hierarchy",
-			"category": "Calls"
-		},
-		{
-			"command": "references-view.showOutgoingCalls",
-			"title": "Show Outgoing Calls",
-			"category": "Calls",
-			"icon": "$(call-outgoing)"
-		},
-		{
-			"command": "references-view.showIncomingCalls",
-			"title": "Show Incoming Calls",
-			"category": "Calls",
-			"icon": "$(call-incoming)"
-		},
-		{
-			"command": "references-view.removeCallItem",
-			"title": "Dismiss",
-			"icon": "$(close)"
-		},
-		{
-			"command": "references-view.next",
-			"title": "Go to Next Reference",
-			"enablement": "references-view.canNavigate"
-		},
-		{
-			"command": "references-view.prev",
-			"title": "Go to Previous Reference",
-			"enablement": "references-view.canNavigate"
-		},
-		{
-			"command": "references-view.showTypeHierarchy",
-			"title": "Show Type Hierarchy",
-			"category": "Types"
-		},
-		{
-			"command": "references-view.showSupertypes",
-			"title": "Show Supertypes",
-			"category": "Types",
-			"icon": "$(type-hierarchy-super)"
-		},
-		{
-			"command": "references-view.showSubtypes",
-			"title": "Show Subtypes",
-			"category": "Types",
-			"icon": "$(type-hierarchy-sub)"
-		},
-		{
-			"command": "references-view.removeTypeItem",
-			"title": "Dismiss",
-			"icon": "$(close)"
-		}
+			{
+				"command": "references-view.findReferences",
+				"title": "Find All References",
+				"category": "References"
+			},
+			{
+				"command": "references-view.clearHistory",
+				"title": "Clear History",
+				"category": "References",
+				"icon": "$(clear-all)"
+			},
+			{
+				"command": "references-view.clear",
+				"title": "Clear",
+				"category": "References",
+				"icon": "$(clear-all)"
+			},
+			{
+				"command": "references-view.refresh",
+				"title": "Refresh",
+				"category": "References",
+				"icon": "$(refresh)"
+			},
+			{
+				"command": "references-view.pickFromHistory",
+				"title": "Show History",
+				"category": "References"
+			},
+			{
+				"command": "references-view.removeReferenceItem",
+				"title": "Dismiss",
+				"icon": "$(close)"
+			},
+			{
+				"command": "references-view.copy",
+				"title": "Copy"
+			},
+			{
+				"command": "references-view.copyAll",
+				"title": "Copy All"
+			},
+			{
+				"command": "references-view.copyPath",
+				"title": "Copy Path"
+			},
+			{
+				"command": "references-view.refind",
+				"title": "Rerun",
+				"icon": "$(refresh)"
+			},
+			{
+				"command": "references-view.next",
+				"title": "Go to Next Reference",
+				"enablement": "references-view.canNavigate"
+			},
+			{
+				"command": "references-view.prev",
+				"title": "Go to Previous Reference",
+				"enablement": "references-view.canNavigate"
+			}
 		],
 		"menus": {
 		"editor/context": [
@@ -172,21 +120,6 @@
 				"command": "references-view.findReferences",
 				"when": "editorHasReferenceProvider",
 				"group": "0_navigation@1"
-			},
-			{
-				"command": "references-view.findImplementations",
-				"when": "editorHasImplementationProvider",
-				"group": "0_navigation@2"
-			},
-			{
-				"command": "references-view.showCallHierarchy",
-				"when": "editorHasCallHierarchyProvider",
-				"group": "0_navigation@3"
-			},
-			{
-				"command": "references-view.showTypeHierarchy",
-				"when": "editorHasTypeHierarchyProvider",
-				"group": "0_navigation@4"
 			}
 		],
 		"view/title": [
@@ -204,26 +137,6 @@
 				"command": "references-view.refresh",
 				"group": "navigation@2",
 				"when": "view == references-view.tree && reference-list.hasResult"
-			},
-			{
-				"command": "references-view.showOutgoingCalls",
-				"group": "navigation@1",
-				"when": "view == references-view.tree && reference-list.hasResult && reference-list.source == callHierarchy &&  references-view.callHierarchyMode == showIncoming"
-			},
-			{
-				"command": "references-view.showIncomingCalls",
-				"group": "navigation@1",
-				"when": "view == references-view.tree && reference-list.hasResult && reference-list.source == callHierarchy &&  references-view.callHierarchyMode == showOutgoing"
-			},
-			{
-				"command": "references-view.showSupertypes",
-				"group": "navigation@1",
-				"when": "view == references-view.tree && reference-list.hasResult && reference-list.source == typeHierarchy &&  references-view.typeHierarchyMode != supertypes"
-			},
-			{
-				"command": "references-view.showSubtypes",
-				"group": "navigation@1",
-				"when": "view == references-view.tree && reference-list.hasResult && reference-list.source == typeHierarchy &&  references-view.typeHierarchyMode != subtypes"
 			}
 		],
 		"view/item/context": [
@@ -231,16 +144,6 @@
 				"command": "references-view.removeReferenceItem",
 				"group": "inline",
 				"when": "view == references-view.tree && viewItem == file-item || view == references-view.tree && viewItem == result-item"
-			},
-			{
-				"command": "references-view.removeCallItem",
-				"group": "inline",
-				"when": "view == references-view.tree && viewItem == call-item"
-			},
-			{
-				"command": "references-view.removeTypeItem",
-				"group": "inline",
-				"when": "view == references-view.tree && viewItem == type-item"
 			},
 			{
 				"command": "references-view.refind",
@@ -251,16 +154,6 @@
 				"command": "references-view.removeReferenceItem",
 				"group": "1",
 				"when": "view == references-view.tree && viewItem == file-item || view == references-view.tree && viewItem == result-item"
-			},
-			{
-				"command": "references-view.removeCallItem",
-				"group": "1",
-				"when": "view == references-view.tree && viewItem == call-item"
-			},
-			{
-				"command": "references-view.removeTypeItem",
-				"group": "1",
-				"when": "view == references-view.tree && viewItem == type-item"
 			},
 			{
 				"command": "references-view.refind",
@@ -281,39 +174,11 @@
 				"command": "references-view.copyAll",
 				"group": "2@3",
 				"when": "view == references-view.tree && viewItem == file-item || view == references-view.tree && viewItem == result-item"
-			},
-			{
-				"command": "references-view.showOutgoingCalls",
-				"group": "1",
-				"when": "view == references-view.tree && viewItem == call-item"
-			},
-			{
-				"command": "references-view.showIncomingCalls",
-				"group": "1",
-				"when": "view == references-view.tree && viewItem == call-item"
-			},
-			{
-				"command": "references-view.showSupertypes",
-				"group": "1",
-				"when": "view == references-view.tree && viewItem == type-item"
-			},
-			{
-				"command": "references-view.showSubtypes",
-				"group": "1",
-				"when": "view == references-view.tree && viewItem == type-item"
 			}
 		],
 		"commandPalette": [
 			{
 				"command": "references-view.removeReferenceItem",
-				"when": "never"
-			},
-			{
-				"command": "references-view.removeCallItem",
-				"when": "never"
-			},
-			{
-				"command": "references-view.removeTypeItem",
 				"when": "never"
 			},
 			{
@@ -377,11 +242,6 @@
 				"command": "references-view.prev",
 				"when": "reference-list.hasResult",
 				"key": "shift+f4"
-			},
-			{
-				"command": "references-view.showCallHierarchy",
-				"when": "editorHasCallHierarchyProvider",
-				"key": "shift+alt+h"
 			}
 		]
 	},
