@@ -1,75 +1,83 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
 import * as path from 'path';
-import { Query } from './query';
+import { ResultJSON } from './json';
 
 export class ResultProvider implements vscode.TreeDataProvider<FileItem | ResultItem> {
-    fileItems: FileItem[] = [];
-    rootLength;
-    // queryHandler: Query = new Query();
+    private path2idx = new Map<string, number>();
+    private _onDidChangeTreeData: vscode.EventEmitter<void | FileItem | ResultItem | (FileItem | ResultItem)[]> = new vscode.EventEmitter < void | FileItem | ResultItem | (FileItem | ResultItem)[]>();
+    onDidChangeTreeData: vscode.Event<void | FileItem | ResultItem | (FileItem | ResultItem)[] | null | undefined> | undefined = this._onDidChangeTreeData.event;
 
-    constructor(private workspaceRoot: string | undefined) {
-        this.rootLength = workspaceRoot ? workspaceRoot.length : 0;
+    refresh(): void {
+        this._onDidChangeTreeData.fire();
     }
-    
+
+    constructor(
+        private resultJSON: ResultJSON,
+    ) {
+    }
+
     getTreeItem(element: FileItem | ResultItem): vscode.TreeItem {
         return element;
     }
 
-    getChildren(element?: FileItem | ResultItem) {
-        if (!element) {
-            if (this.workspaceRoot) {
-                this.walk(this.workspaceRoot);
-            }
-            return this.fileItems;
+    async getChildren(fathItem?: FileItem | ResultItem) {
+        if (!fathItem) {// root
+            let fileItems: FileItem[] = [];
+            this.resultJSON.results.forEach((element, idx, _arr) => {
+                this.path2idx.set(element.path, idx);
+                fileItems.push(new FileItem(
+                    element.path,
+                ));
+            });
+            return fileItems;
         }
-        if (element instanceof FileItem) {
-            // TODO: search in file
-            // let queryResult = new Query().execQuery(element.directory + "/" + element.filename, "'if(){}'");
-            // console.log(queryResult);
-            
-            // const result = [];
-            // result.push(new ResultItem(
-                // queryResult
-            // ));
-            // return result;
+        if (fathItem instanceof FileItem) {
+            let resultItems: ResultItem[] = [];
+            let idx = this.path2idx.get(fathItem.filepath);
+            if (idx !== undefined) {
+                for await (const element of this.resultJSON.results[idx].result) {
+                    const location = new vscode.Location(
+                        vscode.Uri.file(fathItem.filepath),
+                        new vscode.Range(// vscode.Position is zero-based
+                            new vscode.Position(element.sr - 1, element.sc),
+                            new vscode.Position(element.er, element.ec),
+                        )
+                    );
+                    const doc = await vscode.workspace.openTextDocument(location.uri);
+                    const label = doc.getText(location.range);
+                    resultItems.push(new ResultItem(
+                        label,
+                    ));
+                }
+            }
+            return resultItems;
         }
         return undefined;
-    }
-
-    public walk(directory: string) {
-        const files = fs.readdirSync(directory);
-        for (let filename of files) {
-            const filepath = path.join(directory, filename);
-            if (fs.statSync(filepath).isDirectory()) {
-                this.walk(filepath);
-            } else if (path.extname(filename) === '.java') {
-                this.fileItems.push(new FileItem(
-                    filename,
-                    directory,
-                    // directory.substring(this.rootLength + 1),
-                ));
-            }
-        }
     }
 }
 
 class FileItem extends vscode.TreeItem {
     constructor(
-        public filename: string,
-        public directory: string,
+        public filepath: string,
         public collapsibleState: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.Collapsed,
     ) {
-        super(filename, collapsibleState);
-        this.description = directory;
+        super(vscode.Uri.file(filepath), collapsibleState);
+        this.description = path.dirname(filepath);
+        this.iconPath = vscode.ThemeIcon.File;
     }
 }
 
 class ResultItem extends vscode.TreeItem {
     constructor(
-        public label: string,
+        label: string,
         public collapsibleState: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.None,
     ) {
-        super(label, collapsibleState);
+        super(
+            {
+                label,
+                highlights: [[0, label.length]],
+            }, 
+            collapsibleState,
+        );
     }
 }

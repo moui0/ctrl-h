@@ -13,6 +13,7 @@ export class Query {
         this.queryLanguage = "'" + fs.readFileSync(queryLanguagePath, {encoding: "utf-8"}) + "'";
     }
     public execQuery(): string {
+        // TODO: replace ctrl-h.jar
         const childProcess = require('child_process');
         const jarPath = path.normalize(__dirname + "/../src/lib/ctrl-h.jar");
         const cmd = "java -jar " + jarPath
@@ -22,6 +23,5 @@ export class Query {
             ;
         const result = childProcess.execSync(cmd);
         return String.fromCharCode.apply(null, result);
-        // return this.parse(String.fromCharCode.apply(null, result));
     }
 }

@@ -11,7 +11,7 @@
     ],
     "activationEvents": [
         "onCommand:ctrl-h-run",
-        "onView:result-view.main"
+        "onView:result-view.tree"
     ],
     "main": "./out/extension.js",
     "contributes": {
@@ -25,7 +25,7 @@
             "activitybar": [
                 {
                     "id": "result-view",
-                    "title": "Results",
+                    "title": "Ctrl-H Result",
                     "icon": "$(references)"
                 }
             ]
@@ -33,9 +33,8 @@
         "views": {
             "result-view": [
                 {
-                    "id": "result-view.main",
-                    "name": "Results",
-                    "icon": "$(references)"
+                    "id": "result-view.tree",
+                    "name": "Results"
                 }
             ]
         }

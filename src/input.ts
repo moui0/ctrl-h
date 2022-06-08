@@ -1,21 +1,44 @@
+import * as fs from "fs";
 import * as vscode from "vscode";
 import { Query } from "./query";
+import { ResultProvider } from "./resultProvider";
 
 export async function runHander() {
-    const mode = await getMode();
-    const sourceCodePath = await getSourceCodePath();
-    const queryLanguagePath = await getQueryLanguagePath();
+    const items = ["Search", "Replace"];
+    const mode = await getMode(items);
+    // const sourceCodePath = await getSourceCodePath();
+    // const queryLanguagePath = await getQueryLanguagePath();
     if (mode) {
-        if (sourceCodePath && queryLanguagePath) {
-            const query = new Query(sourceCodePath, queryLanguagePath);
-            const res = query.execQuery();
-            vscode.window.showInformationMessage(`${res}`);
-        }
+        // TODO: search
+        // if (mode === items[0] && sourceCodePath && queryLanguagePath) {
+            // ! Temporary annotation
+            // const query = new Query(sourceCodePath, queryLanguagePath);
+            // const res = query.execQuery();
+            // console.log(res);
+            
+            // TODO: parse query result into JSON
+            // ! assume test.json is query result.
+            const queryResult = fs.readFileSync("/home/why/ctrl-h/src/lib/test.json").toString();
+            const queryResultJSON = JSON.parse(queryResult);
+
+            // TODO: show view-tree
+            const provider = new ResultProvider(queryResultJSON);
+            vscode.window.registerTreeDataProvider("result-view.tree", provider);
+            provider.refresh();
+
+
+            // TODO: hightlights
+
+            // TODO: navigation
+            
+        // }
+        // TODO: replace
+        // if (mode === items[1]) {
+        // }
     }
 }
 
-async function getMode() {
-    const items = ["Search", "Replace"];
+async function getMode(items: string[]) {
     const mode = await vscode.window.showQuickPick(
         items,
         {
@@ -36,6 +59,7 @@ async function getSourceCodePath() {
                 "Java": ["java"]
             },
             title: "Enter the path to search or replace.",
+            // ! default url
             defaultUri: vscode.Uri.file("/home/why/Java/src/org/antlr/v4/runtime/Lexer.java"),
         }
     );
@@ -55,6 +79,7 @@ async function getQueryLanguagePath() {
                 "Query": ["query"]
             },
             title: "Enter the path of query language file.",
+            // ! default url
             defaultUri: vscode.Uri.file("/home/why/Java/test.query"),
         }
     );

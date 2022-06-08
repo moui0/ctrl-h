@@ -1,0 +1,25 @@
+{
+    "results": [
+        {
+            "path": "/home/why/Java/src/org/antlr/v4/runtime/Lexer.java",
+            "result": [
+                {
+                    "sr": 90,
+                    "sc": 2,
+                    "er": 92,
+                    "ec": 2,
+                    "si": 1,
+                    "ei": 10
+                },
+                {
+                    "sr": 113,
+                    "sc": 2,
+                    "er": 115,
+                    "ec": 2,
+                    "si": 21,
+                    "ei": 30
+                }
+            ]
+        }
+    ]
+}
