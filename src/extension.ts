@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { runHander } from "./input";
+import { runHander } from "./runtime";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed

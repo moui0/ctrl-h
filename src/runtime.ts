@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as vscode from "vscode";
 import { Query } from "./query";
-import { ResultProvider } from "./resultProvider";
+import { FileItem, ResultItem, ResultProvider } from "./resultProvider";
 
 export async function runHander() {
     const items = ["Search", "Replace"];
@@ -16,26 +16,46 @@ export async function runHander() {
             // const res = query.execQuery();
             // console.log(res);
             
-            // TODO: parse query result into JSON
+            // parse query result into JSON
             // ! assume test.json is query result.
             const queryResult = fs.readFileSync("/home/why/ctrl-h/src/lib/test.json").toString();
             const queryResultJSON = JSON.parse(queryResult);
 
-            // TODO: show view-tree
+            // tree view
             const provider = new ResultProvider(queryResultJSON);
-            vscode.window.registerTreeDataProvider("result-view.tree", provider);
+            
+            let treeView = vscode.window.createTreeView(
+                "result-view.tree",
+                {
+                    treeDataProvider: provider,
+                    canSelectMany: false,
+                },
+            );
+            // navigation
+            treeView.onDidChangeSelection((event) => {
+                navigation(event.selection[0]);
+            });
+        
             provider.refresh();
-
-
+        
             // TODO: hightlights
 
-            // TODO: navigation
-            
         // }
         // TODO: replace
         // if (mode === items[1]) {
         // }
     }
+}
+
+function navigation(item: FileItem | ResultItem) {
+    let fileItem = item instanceof ResultItem ? item.file : item;
+    let location = item instanceof ResultItem ? item.localtion : item.results[0].localtion;
+    vscode.commands.executeCommand(
+        'vscode.open',
+        fileItem.uri, {
+            selection: new vscode.Selection(location.range.start, location.range.start),
+        }
+    );
 }
 
 async function getMode(items: string[]) {

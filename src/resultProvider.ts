@@ -3,7 +3,6 @@ import * as path from 'path';
 import { ResultJSON } from './json';
 
 export class ResultProvider implements vscode.TreeDataProvider<FileItem | ResultItem> {
-    private path2idx = new Map<string, number>();
     private _onDidChangeTreeData: vscode.EventEmitter<void | FileItem | ResultItem | (FileItem | ResultItem)[]> = new vscode.EventEmitter < void | FileItem | ResultItem | (FileItem | ResultItem)[]>();
     onDidChangeTreeData: vscode.Event<void | FileItem | ResultItem | (FileItem | ResultItem)[] | null | undefined> | undefined = this._onDidChangeTreeData.event;
 
@@ -23,60 +22,61 @@ export class ResultProvider implements vscode.TreeDataProvider<FileItem | Result
     async getChildren(fathItem?: FileItem | ResultItem) {
         if (!fathItem) {// root
             let fileItems: FileItem[] = [];
-            this.resultJSON.results.forEach((element, idx, _arr) => {
-                this.path2idx.set(element.path, idx);
-                fileItems.push(new FileItem(
-                    element.path,
-                ));
-            });
+            for await (const file of this.resultJSON.results) {
+                const uri = vscode.Uri.file(file.path);
+                const document = await vscode.workspace.openTextDocument(uri);
+
+                let fileItem = new FileItem(uri, document);
+
+                let resultItems: ResultItem[] = [];
+                for await (const res of file.result) {
+                    const location = new vscode.Location(
+                        uri,
+                        new vscode.Range(// vscode.Position is zero-based
+                            new vscode.Position(res.sr - 1, res.sc),
+                            new vscode.Position(res.er, res.ec),
+                        ),
+                    );
+                    resultItems.push(new ResultItem(
+                        fileItem,
+                        location,
+                    ));
+                };
+
+                fileItem.results = resultItems;
+
+                fileItems.push(fileItem);
+            };
             return fileItems;
         }
         if (fathItem instanceof FileItem) {
-            let resultItems: ResultItem[] = [];
-            let idx = this.path2idx.get(fathItem.filepath);
-            if (idx !== undefined) {
-                for await (const element of this.resultJSON.results[idx].result) {
-                    const location = new vscode.Location(
-                        vscode.Uri.file(fathItem.filepath),
-                        new vscode.Range(// vscode.Position is zero-based
-                            new vscode.Position(element.sr - 1, element.sc),
-                            new vscode.Position(element.er, element.ec),
-                        )
-                    );
-                    const doc = await vscode.workspace.openTextDocument(location.uri);
-                    const label = doc.getText(location.range);
-                    resultItems.push(new ResultItem(
-                        label,
-                    ));
-                }
-            }
-            return resultItems;
+            return fathItem.results;
         }
         return undefined;
     }
 }
 
-class FileItem extends vscode.TreeItem {
+export class FileItem extends vscode.TreeItem {
+    public results: ResultItem[] = [];
     constructor(
-        public filepath: string,
+        public uri: vscode.Uri,
+        public document: vscode.TextDocument,
         public collapsibleState: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.Collapsed,
     ) {
-        super(vscode.Uri.file(filepath), collapsibleState);
-        this.description = path.dirname(filepath);
+        super(uri, collapsibleState);
+        this.description = path.dirname(uri.path);
         this.iconPath = vscode.ThemeIcon.File;
     }
 }
 
-class ResultItem extends vscode.TreeItem {
+export class ResultItem extends vscode.TreeItem {
     constructor(
-        label: string,
+        public file: FileItem,
+        public localtion: vscode.Location,
         public collapsibleState: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.None,
     ) {
         super(
-            {
-                label,
-                highlights: [[0, label.length]],
-            }, 
+            file.document.getText(localtion.range),
             collapsibleState,
         );
     }
