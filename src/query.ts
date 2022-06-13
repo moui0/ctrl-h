@@ -16,10 +16,12 @@ export class Query {
         // TODO: replace ctrl-h.jar
         const childProcess = require('child_process');
         const jarPath = path.normalize(__dirname + "/../src/lib/ctrl-h.jar");
+        const jsonPath = path.normalize(__dirname + "/../src/lib/out/res.json");
+        childProcess.execSync("cd " + __dirname + "/../src/lib/");
         const cmd = "java -jar " + jarPath
-            + " -f " + this.filePath
-            + " -s "
-            + " -l " + this.queryLanguage
+            + " -p " + this.filePath
+            + " -t " + this.queryLanguage
+            + " -d " + jsonPath
             ;
         const result = childProcess.execSync(cmd);
         return String.fromCharCode.apply(null, result);

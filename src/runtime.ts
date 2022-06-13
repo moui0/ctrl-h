@@ -3,26 +3,37 @@ import * as vscode from "vscode";
 import { Query } from "./query";
 import { FileItem, ResultItem, ResultProvider } from "./resultProvider";
 
+const normal = vscode.window.createTextEditorDecorationType(
+    {
+        backgroundColor: new vscode.ThemeColor('editor.background'),
+    },
+);
+const highlight = vscode.window.createTextEditorDecorationType(
+    {
+        backgroundColor: new vscode.ThemeColor('editor.findMatchHighlightBackground'),
+    },
+);
+
 export async function runHander() {
     const items = ["Search", "Replace"];
     const mode = await getMode(items);
-    // const sourceCodePath = await getSourceCodePath();
-    // const queryLanguagePath = await getQueryLanguagePath();
+    const sourceCodePath = await getSourceCodePath();
+    const queryLanguagePath = await getQueryLanguagePath();
     if (mode) {
         // TODO: search
-        // if (mode === items[0] && sourceCodePath && queryLanguagePath) {
+        if (mode === items[0] && sourceCodePath && queryLanguagePath) {
             // ! Temporary annotation
-            // const query = new Query(sourceCodePath, queryLanguagePath);
-            // const res = query.execQuery();
-            // console.log(res);
+            const query = new Query(sourceCodePath, queryLanguagePath);
+            const res = query.execQuery();
+            console.log(res);
             
             // parse query result into JSON
-            // ! assume test.json is query result.
-            const queryResult = fs.readFileSync("/home/why/ctrl-h/src/lib/test.json").toString();
+            const queryResult = fs.readFileSync(__dirname + "/../src/lib/out/res.json").toString();
             const queryResultJSON = JSON.parse(queryResult);
 
             // tree view
             const provider = new ResultProvider(queryResultJSON);
+            provider.refresh();
             
             let treeView = vscode.window.createTreeView(
                 "result-view.tree",
@@ -31,19 +42,27 @@ export async function runHander() {
                     canSelectMany: false,
                 },
             );
-            // navigation
             treeView.onDidChangeSelection((event) => {
+                // navigation
                 navigation(event.selection[0]);
+                // highlights
+                highlights(event.selection[0], provider);
             });
-        
-            provider.refresh();
-        
-            // TODO: hightlights
-
-        // }
+        }
         // TODO: replace
         // if (mode === items[1]) {
         // }
+    }
+}
+
+function highlights(item: FileItem | ResultItem, provider: ResultProvider) {
+    const uri = item instanceof ResultItem ? item.file.uri : item.uri;
+    const ranges = provider.getEditorHighlightRanges(uri);
+
+    let editor = vscode.window.activeTextEditor;
+    if (editor && ranges) {
+        editor.setDecorations(normal, ranges);
+        editor.setDecorations(highlight, ranges);
     }
 }
 

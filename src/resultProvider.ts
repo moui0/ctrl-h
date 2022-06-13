@@ -3,6 +3,7 @@ import * as path from 'path';
 import { ResultJSON } from './json';
 
 export class ResultProvider implements vscode.TreeDataProvider<FileItem | ResultItem> {
+    private _fileItems: FileItem[] = [];
     private _onDidChangeTreeData: vscode.EventEmitter<void | FileItem | ResultItem | (FileItem | ResultItem)[]> = new vscode.EventEmitter < void | FileItem | ResultItem | (FileItem | ResultItem)[]>();
     onDidChangeTreeData: vscode.Event<void | FileItem | ResultItem | (FileItem | ResultItem)[] | null | undefined> | undefined = this._onDidChangeTreeData.event;
 
@@ -21,7 +22,7 @@ export class ResultProvider implements vscode.TreeDataProvider<FileItem | Result
 
     async getChildren(fathItem?: FileItem | ResultItem) {
         if (!fathItem) {// root
-            let fileItems: FileItem[] = [];
+            this._fileItems = [];
             for await (const file of this.resultJSON.results) {
                 const uri = vscode.Uri.file(file.path);
                 const document = await vscode.workspace.openTextDocument(uri);
@@ -45,14 +46,19 @@ export class ResultProvider implements vscode.TreeDataProvider<FileItem | Result
 
                 fileItem.results = resultItems;
 
-                fileItems.push(fileItem);
+                this._fileItems.push(fileItem);
             };
-            return fileItems;
+            return this._fileItems;
         }
         if (fathItem instanceof FileItem) {
             return fathItem.results;
         }
         return undefined;
+    }
+
+    public getEditorHighlightRanges(uri: vscode.Uri): vscode.Range[] | undefined {
+        const file = this._fileItems.find(file => file.uri.toString() === uri.toString());
+        return file?.results.map(res => res.localtion.range);
     }
 }
 
