@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as vscode from "vscode";
 import { Query } from "./query";
+import { Replace } from "./replace";
 import { FileItem, ResultItem, ResultProvider } from "./resultProvider";
 
 const normal = vscode.window.createTextEditorDecorationType(
@@ -21,9 +22,9 @@ const selection = vscode.window.createTextEditorDecorationType(
 
 
 export async function runHander(targetLanguage: string, sourceCodePath: string, queryLanguage: string, replaceLanguage: string) {
-    // TODO: search
-    const query = new Query(sourceCodePath, queryLanguage);
+    const query = new Query(targetLanguage, sourceCodePath, queryLanguage);
     const res = query.execQuery();
+    // TODO: jar包运行时异常处理
     console.log(res);
     
     // parse query result into JSON
@@ -47,6 +48,11 @@ export async function runHander(targetLanguage: string, sourceCodePath: string, 
         // highlights
         highlights(event.selection[0], provider);
     });
+
+    // TODO: replace
+    const replace = new Replace(replaceLanguage, queryResultJSON);
+    replace.execReplace();
+
 }
 
 function highlights(item: FileItem | ResultItem, provider: ResultProvider) {
@@ -73,4 +79,23 @@ function navigation(item: FileItem | ResultItem) {
             selection: new vscode.Selection(location.range.start, location.range.end),
         }
     );
+}
+
+export async function getSourceCodePath() {
+    const path = await vscode.window.showOpenDialog(
+        {
+            canSelectFiles: true,
+            canSelectFolders: true,
+            canSelectMany: false,
+            filters: {
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                "Java": ["java"]
+            },
+            title: "Enter the path to search or replace.",
+            defaultUri: vscode.Uri.file("/home/why/Java/test.java"),
+        }
+    );
+    if (path) {
+        return path[0].path;
+    }
 }

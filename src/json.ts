@@ -7,13 +7,29 @@ export class ResultJSON {
     
 class Results {
     constructor(
-        public result: Result[],
         public path: string,
+        public path_res: PathResult[],
     ) {
     }
 }
 
-class Result {
+class PathResult {
+    constructor(
+        public label: number,
+        public label_res: LabelRes[],
+    ) {
+    }
+}
+
+class LabelRes {
+    constructor(
+        public position: Position,
+        public subNode: Position[],
+    ) {
+    }
+}
+
+class Position {
     constructor(
         public sr: number,
         public sc: number,

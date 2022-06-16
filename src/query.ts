@@ -5,6 +5,7 @@ export class Query {
     private queryLanguage: string = "''";
     
     constructor(
+        public targetLanguage: string,
         public filePath: string,
         queryLanguage: string,
     ) {
@@ -19,6 +20,7 @@ export class Query {
             + " -p " + this.filePath
             + " -t " + this.queryLanguage
             + " -d " + jsonPath
+            + " -l " + this.targetLanguage
             ;
         const result = childProcess.execSync(cmd);
         return String.fromCharCode.apply(null, result);

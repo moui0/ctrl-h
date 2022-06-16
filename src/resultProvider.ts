@@ -30,12 +30,13 @@ export class ResultProvider implements vscode.TreeDataProvider<FileItem | Result
                 let fileItem = new FileItem(uri, document);
 
                 let resultItems: ResultItem[] = [];
-                for await (const res of file.result) {
+                for await (const res of file.path_res[0].label_res) {
+                    const position = res.position;
                     const location = new vscode.Location(
                         uri,
                         new vscode.Range(// vscode.Position is zero-based, some adjustment is needed.
-                            new vscode.Position(res.sr - 1, res.sc),
-                            new vscode.Position(res.er - 1, res.ec + 1),
+                            new vscode.Position(position.sr - 1, position.sc),
+                            new vscode.Position(position.er - 1, position.ec + 1),
                         ),
                     );
                     resultItems.push(new ResultItem(

@@ -1,25 +1,75 @@
 {
-    "results": [
+  "results": [
+    {
+      "path": "Project/test/DummyTest.java",
+      "path_res": [
         {
-            "path": "/home/why/Java/src/org/antlr/v4/runtime/Lexer.java",
-            "result": [
+          "label": 0,
+          "label_res": [
+            {
+              "position": {
+                "sr": 68,
+                "sc": 8,
+                "er": 76,
+                "ec": 21,
+                "si": 1670,
+                "ei": 1850
+              },
+              "subNode": [
                 {
-                    "sr": 90,
-                    "sc": 2,
-                    "er": 92,
-                    "ec": 2,
-                    "si": 1,
-                    "ei": 10
-                },
-                {
-                    "sr": 113,
-                    "sc": 2,
-                    "er": 115,
-                    "ec": 2,
-                    "si": 21,
-                    "ei": 30
+                  "sr": 68,
+                  "sc": 12,
+                  "er": 74,
+                  "ec": 13,
+                  "si": 1674,
+                  "ei": 1825
                 }
-            ]
+              ]
+            }
+          ]
+        },
+        {
+          "label": 1,
+          "label_res": [
+            {
+              "position": {
+                "sr": 71,
+                "sc": 12,
+                "er": 74,
+                "ec": 12,
+                "si": 1740,
+                "ei": 1815
+              },
+              "subNode": [
+                {
+                  "sr": 71,
+                  "sc": 25,
+                  "er": 73,
+                  "ec": 22,
+                  "si": 1753,
+                  "ei": 1814
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": 2,
+          "label_res": [
+            {
+              "position": {
+                "sr": 72,
+                "sc": 16,
+                "er": 72,
+                "ec": 20,
+                "si": 1771,
+                "ei": 1775
+              },
+              "subNode": []
+            }
+          ]
         }
-    ]
+      ]
+    }
+  ]
 }
