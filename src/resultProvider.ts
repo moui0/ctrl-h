@@ -33,9 +33,9 @@ export class ResultProvider implements vscode.TreeDataProvider<FileItem | Result
                 for await (const res of file.result) {
                     const location = new vscode.Location(
                         uri,
-                        new vscode.Range(// vscode.Position is zero-based
+                        new vscode.Range(// vscode.Position is zero-based, some adjustment is needed.
                             new vscode.Position(res.sr - 1, res.sc),
-                            new vscode.Position(res.er, res.ec),
+                            new vscode.Position(res.er - 1, res.ec + 1),
                         ),
                     );
                     resultItems.push(new ResultItem(

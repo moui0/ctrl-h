@@ -10,15 +10,17 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:ctrl-h-run",
         "onView:result-view.tree"
     ],
     "main": "./out/extension.js",
     "contributes": {
         "commands": [
+        ],
+        "viewsWelcome": [
             {
-                "command": "ctrl-h-run",
-                "title": "Ctrl-H"
+                "view":"result-view.tree",
+                "contents": "Please press Ctrl+Shift+P and enter 'Ctrl-H', or click \n [Run](command:ctrl-h-webview) \n to run Ctrl-H.",
+                "when": "true"
             }
         ],
         "viewsContainers": {
