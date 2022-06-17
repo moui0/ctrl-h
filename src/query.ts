@@ -7,7 +7,7 @@ var jsonPath = path.normalize(__dirname + "/../src/lib/out/res.json");
 
 export class Query {
     private queryLanguage: string = "''";
-    
+
     constructor(
         public targetLanguage: string,
         public filePath: string,
@@ -15,19 +15,23 @@ export class Query {
     ) {
         this.queryLanguage = "'" + queryLanguage + "'";
     }
-    public execQuery() {
-        const childProcess = require('child_process');
-        childProcess.execSync("cd " + __dirname + "/../src/lib/");
+    public async execQuery() {
+        const util = require("util");
+        const exec = util.promisify(require("child_process").exec);
+        // const childProcess = require('child_process');
         const cmd = "java -jar " + jarPath
             + " -p " + this.filePath
             + " -t " + this.queryLanguage
             + " -d " + jsonPath
             + " -l " + this.targetLanguage
             ;
-        const result = childProcess.execSync(cmd);
-        console.log("[exec jar]: [\n" + result + "\n]");
-        
-        return String.fromCharCode.apply(null, result);
+        const { stdout, stderr } = await exec(cmd);
+        if (stderr === "No matching results.\n") {
+            throw new Error(stderr);
+        } else if (stderr !== "") {
+            throw new Error("Query Language syntax error: " + stderr);
+            
+        }
     }
 }
 

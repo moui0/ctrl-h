@@ -26,9 +26,11 @@ const selection = vscode.window.createTextEditorDecorationType(
 
 export async function runHander(targetLanguage: string, sourceCodePath: string, queryLanguage: string, replaceLanguage: string) {
     const query = new Query(targetLanguage, sourceCodePath, queryLanguage);
-    const res = query.execQuery();
-    // TODO: jar包运行时异常处理
-    console.log(res);
+    try {
+        await query.execQuery();
+    } catch (error) {
+        throw error;
+    }
     
     // parse query result into JSON
     const queryResult = fs.readFileSync(__dirname + "/../src/lib/out/res.json").toString();
