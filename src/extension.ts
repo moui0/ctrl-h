@@ -1,10 +1,14 @@
 import * as vscode from 'vscode';
+import { showJSON } from './query';
 import { getSourceCodePath, runHander } from "./runtime";
 import { getWebViewContent } from './webview';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+    vscode.commands.registerCommand("result-view.showJSON", () => {
+        showJSON();
+    });
     vscode.commands.registerCommand("ctrl-h-webview", () => {
         const panel = vscode.window.createWebviewPanel(
             "ctrl-h",

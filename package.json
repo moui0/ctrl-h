@@ -11,7 +11,8 @@
     ],
     "activationEvents": [
         "onView:result-view.tree",
-        "onCommand:ctrl-h-webview"
+        "onCommand:ctrl-h-webview",
+        "onCommand:result-view.showJSON"
     ],
     "main": "./out/extension.js",
     "contributes": {
@@ -19,6 +20,10 @@
             {
                 "command": "ctrl-h-webview",
                 "title": "Ctrl-H"
+            },
+            {
+                "command": "result-view.showJSON",
+                "title": "Ctrl-H.showJSON"
             }
         ],
         "viewsWelcome": [
