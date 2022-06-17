@@ -1,4 +1,3 @@
-import * as vscode from "vscode";
 import * as fs from "fs";
 import { ResultJSON } from "./json";
 
@@ -10,16 +9,20 @@ export class Replace {
     }
 
     // replace language syntax check
-    parse(): ReplaceInfo[] {
+    parse(): ReplaceInfo[] | undefined {
+        if (this.replaceLanguage.replace(/\s/g, "") === "") {
+            return undefined;
+        }
         const replaceLines = this.splitIntoLines();
         let result: ReplaceInfo[] = [];
         replaceLines.forEach((line, idx, array) => {
+            if (line.match(/\[\d+(\.\d+)?\]->(\[\d+(\.\d+)?\])?\+?(""".*""")?\+?(\[\d+(\.\d+)?\])?/g) === null) {
+                throw new Error((idx + 1) + "-th: Replace Language mismatches pattern.");
+            }
             // TODO: 替换语言检查：
             // 1. 左部和右部label相等
             // TODO: 2. label在范围内
             // TODO: 3. index在范围内
-            // !: 假设: 左右的index要么同时存在，要么同时不存在
-            // !: 假设: 输入没有语法错误
 
             console.log(line);
 
@@ -54,7 +57,7 @@ export class Replace {
                 text = [...isPattern2][0];
                 text = text.substring(3, text.length - 3);
             }
-            console.log(label);
+            // console.log(label);
             
             if (!((label[1] === -1 || label[0] === label[1]) &&
                   (label[2] === -1 || label[0] === label[2]))) {
@@ -62,9 +65,15 @@ export class Replace {
             }
             result.push(new ReplaceInfo(label, index, text));
         });
-        // return result;
+
         return result.sort((a: ReplaceInfo, b: ReplaceInfo) => {
-            return a.label[0] < b.label[0] ? 1 : -1;
+            if (a.label[0] < b.label[0]) {
+                return -1;
+            } else if (a.label[0] === b.label[0]) {
+                return a.index[0] < b.index[0] ? -1 : 1;
+            } else {
+                return 1;
+            }
         });
     }
 
@@ -75,15 +84,18 @@ export class Replace {
         } catch (error) {
             throw error;
         }
-        let result: string = "";
+        if (replaceInfo === undefined) {
+            return;
+        }
+        if (replaceInfo.length === 0) {
+            throw new Error("Invaild Replace Language.");
+        }
+        
         for (const iterator of this.resultJSON.results) {
             const path = iterator.path;
             const source = fs.readFileSync(path).toString();
             let pos = 0;
             let result = ""; 
-
-            console.log(source);
-            
 
             // 遍历label的深度, 各label深度应该是相同的
             // 计算最大深度, 假设label的索引 == label
@@ -102,11 +114,9 @@ export class Replace {
                     if (info.label[1] !== -1) {
                         const prevLabel = info.label[1];
                         const prevIndex = info.index[1];
-                        console.log("here1");
                         const targetPosition = prevIndex === -1 ?
                             iterator.path_res[prevLabel].label_res[depth].position :
                             iterator.path_res[prevLabel].label_res[depth].subNode[prevIndex];
-                        console.log("here2");
                         replaceString += source.substring(targetPosition.si, targetPosition.ei);
                     }
                     // 第二部分, 文本

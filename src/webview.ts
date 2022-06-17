@@ -8,7 +8,9 @@ export function getWebViewContent() {
     <title>Ctrl-H</title>
     <style>
         body {
-            background-color: white;
+            background-color: var(--vscode-editor-background);
+            font-family: var(--vscode-editor-font-family);
+            color: var(--vscode-editor-foreground);
         }
         .all {
             width: 500px;
@@ -21,16 +23,29 @@ export function getWebViewContent() {
         div {
             margin-top: 20px;
         }
-        input:hover {
-            border-color: #0e639c;
+
+        input, textarea {
+            background-color: var(--vscode-input-background);
+            border: var(--vscode-input-border);
+            color: var(--vscode-input-foreground);
+            font-family: var(--vscode-editor-font-family);
+        }
+        #target {
+            font-family: var(--vscode-editor-font-family);
+            background-color: var(--vscode-dropdown-background);
+            border: var(--vscode-dropdown-border);
+            color: var(--vscode-dropdown-foreground);
         }
         #run {
-            background-color: #0e639c;
-            color: white;
+            background-color: var(--vscode-button-background);
+            color: var(--vscode-button-foreground);
             width: 100px;
             height: 40px;
-            border: #0e639c solid;
+            border: var(--vscode-button-border);
             border-radius: 5px;
+        }
+        #run:hover {
+            background-color: var(--vscode-button-hoverBackground);
         }
 
     </style>
@@ -47,10 +62,6 @@ export function getWebViewContent() {
                     <option value="java">java</option>
                     <option value="cpp">cpp</option>
                 </select>
-            </div>
-            <div>
-                <label for="path">Choose file or directory path:</label>
-                <input type="file" name="" id="path">
             </div>
             <div>
                 <label for="">Query Language</label>
@@ -70,15 +81,14 @@ export function getWebViewContent() {
     (function() {
         const vscode = acquireVsCodeApi();
         document.getElementById("run").onclick = function() {
-            const targetLanguage = document.getElementById("target").value;
-            // const path = document.getElementById("path").files[0];// TODO
-            const queryLanguage = document.getElementById("query").value;
-            const replaceLanguage = document.getElementById("replace").value;
+            let targetLanguage = document.getElementById("target").value;
+            let queryLanguage = document.getElementById("query").value;
+            let replaceLanguage = document.getElementById("replace").value;
+
             vscode.postMessage({
                 command: "run",
                 text: {
                     "targetLanguage": targetLanguage,
-                    "path": "",
                     "queryLanguage": queryLanguage,
                     "replaceLanguage": replaceLanguage,
                 }

@@ -4,6 +4,9 @@ import { Query } from "./query";
 import { Replace } from "./replace";
 import { FileItem, ResultItem, ResultProvider } from "./resultProvider";
 
+var treeView: vscode.TreeView<FileItem | ResultItem>;
+var provider: ResultProvider;
+
 const normal = vscode.window.createTextEditorDecorationType(
     {
         backgroundColor: new vscode.ThemeColor('editor.background'),
@@ -32,10 +35,10 @@ export async function runHander(targetLanguage: string, sourceCodePath: string, 
     const queryResultJSON = JSON.parse(queryResult);
 
     // tree view
-    const provider = new ResultProvider(queryResultJSON);
+    provider = new ResultProvider(queryResultJSON);
     provider.refresh();
     
-    let treeView = vscode.window.createTreeView(
+    treeView = vscode.window.createTreeView(
         "result-view.tree",
         {
             treeDataProvider: provider,
@@ -49,10 +52,12 @@ export async function runHander(targetLanguage: string, sourceCodePath: string, 
         highlights(event.selection[0], provider);
     });
 
-    // TODO: replace
     const replace = new Replace(replaceLanguage, queryResultJSON);
-    replace.execReplace();
-
+    try {
+        replace.execReplace();
+    } catch (error) {
+        throw error;
+    }
 }
 
 function highlights(item: FileItem | ResultItem, provider: ResultProvider) {
@@ -81,18 +86,19 @@ function navigation(item: FileItem | ResultItem) {
     );
 }
 
-export async function getSourceCodePath() {
+export async function getSourceCodePath(targetLanguage: string) {
+    const label = targetLanguage === "java" ? "Java" : "Cpp";
+    const ext = targetLanguage === "java" ? ["java"] : ["c", "cpp"];
+    
     const path = await vscode.window.showOpenDialog(
         {
             canSelectFiles: true,
             canSelectFolders: true,
             canSelectMany: false,
             filters: {
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                "Java": ["java"]
+                label: ext
             },
             title: "Enter the path to search or replace.",
-            defaultUri: vscode.Uri.file("/home/why/Java/test.java"),
         }
     );
     if (path) {

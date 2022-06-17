@@ -11,7 +11,7 @@ export class Query {
     ) {
         this.queryLanguage = "'" + queryLanguage + "'";
     }
-    public execQuery(): string {
+    public execQuery() {
         const childProcess = require('child_process');
         const jarPath = path.normalize(__dirname + "/../src/lib/ctrl-h.jar");
         const jsonPath = path.normalize(__dirname + "/../src/lib/out/res.json");
@@ -23,6 +23,8 @@ export class Query {
             + " -l " + this.targetLanguage
             ;
         const result = childProcess.execSync(cmd);
+        console.log("[exec jar]: [\n" + result + "\n]");
+        
         return String.fromCharCode.apply(null, result);
     }
 }

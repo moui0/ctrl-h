@@ -7,7 +7,7 @@ export class ResultProvider implements vscode.TreeDataProvider<FileItem | Result
     private _onDidChangeTreeData: vscode.EventEmitter<void | FileItem | ResultItem | (FileItem | ResultItem)[]> = new vscode.EventEmitter < void | FileItem | ResultItem | (FileItem | ResultItem)[]>();
     onDidChangeTreeData: vscode.Event<void | FileItem | ResultItem | (FileItem | ResultItem)[] | null | undefined> | undefined = this._onDidChangeTreeData.event;
 
-    refresh(): void {
+    refresh() {
         this._onDidChangeTreeData.fire();
     }
 

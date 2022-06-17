@@ -21,19 +21,28 @@ export function activate(context: vscode.ExtensionContext) {
                     const targetLanguage = message.text.targetLanguage;
                     const queryLanguage = message.text.queryLanguage;
                     const replaceLanguage = message.text.replaceLanguage;
-                    panel.dispose();
 
-                    const path = await getSourceCodePath();
+                    if (queryLanguage.replace(/\s/g, "") === "") {
+                        vscode.window.showErrorMessage("Query Language can not be null");
+                        return;
+                    }
+                    
+                    const path = await getSourceCodePath(targetLanguage);
                     if (!path) {return;}
 
-                    runHander(
-                        targetLanguage,
-                        path,
-                        queryLanguage,
-                        replaceLanguage,
-                    );
+                    try {
+                        await runHander(
+                            targetLanguage,
+                            path,
+                            queryLanguage,
+                            replaceLanguage,
+                        );
+                        panel.dispose();
+                    } catch (error: any) {
+                        vscode.window.showErrorMessage(error.toString());
+                    }
+                    
                     break;
-                // TODO: html异常处理
                 default:
                     break;
             }

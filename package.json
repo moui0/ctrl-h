@@ -10,11 +10,16 @@
         "Other"
     ],
     "activationEvents": [
-        "onView:result-view.tree"
+        "onView:result-view.tree",
+        "onCommand:ctrl-h-webview"
     ],
     "main": "./out/extension.js",
     "contributes": {
         "commands": [
+            {
+                "command": "ctrl-h-webview",
+                "title": "Ctrl-H"
+            }
         ],
         "viewsWelcome": [
             {
