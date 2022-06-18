@@ -1,4 +1,5 @@
 import * as fs from "fs";
+import * as vscode from "vscode";
 import { ResultJSON } from "./json";
 
 export class Replace {
@@ -16,7 +17,7 @@ export class Replace {
         const replaceLines = this.splitIntoLines();
         let result: ReplaceInfo[] = [];
         replaceLines.forEach((line, idx, array) => {
-            if (line.match(/\[\d+(\.\d+)?\]->(\[\d+(\.\d+)?\])?\+?(""".*""")?\+?(\[\d+(\.\d+)?\])?/g) === null) {
+            if (line.match(/\[\d+(\.\d+)?\]=>(""".*""")?(##)?(\[\d+(\.\d+)?\])?(##)?(""".*""")?/g) === null) {
                 throw new Error((idx + 1) + "-th: Replace Language mismatches pattern.");
             }
             // TODO: 替换语言检查：
@@ -24,46 +25,43 @@ export class Replace {
             // TODO: 2. label在范围内
             // TODO: 3. index在范围内
 
-            console.log(line);
+            let label = [-1, -1], index = [-1, -1];
+            let text = ["", ""];
 
-            const nums = line.match(/\d+/g);
-            const isPattern2 = line.match(/""".+"""/g);
-            const withIndex = line.match(/\[\d+.\d+\]/g);
-            const pattern2WithPrev = line.match(/->\[\d+/g);
-            const pattern2WithPost = line.match(/\d+\]$/g);
-            let label = [-1, -1, -1], index = [-1, -1, -1];
-            let text = "";
-            if (withIndex) {// 有index
-                if (nums === null) { return []; }
-                label[0] = parseInt(nums[0]);
-                index[0] = parseInt(nums[1]);
-                if (!isPattern2 || pattern2WithPrev) {
-                    label[1] = parseInt(nums[2]);
-                    index[1] = parseInt(nums[3]);
-                } else if (pattern2WithPost) {
-                    label[2] = parseInt(nums[nums.length - 2]);
-                    index[2] = parseInt(nums[nums.length - 1]);
-                }
-            } else {// 无index
-                if (nums === null) { return []; }
-                label[0] = parseInt(nums[0]);
-                if (!isPattern2 || pattern2WithPrev) {
-                    label[1] = parseInt(nums[1]);
-                } else if (pattern2WithPost) {
-                    label[2] = parseInt(nums[nums.length - 1]);
+            const parts = line.split(/=>|"""|##|\[|\]/g).filter(s => s && s.trim());
+            const partsFill: string[] = [];
+            let cnt = 0;
+            for (let i = 0; i < 4; i++) {
+                if (cnt < parts.length && (i % 2 === 0) === (!isNaN(Number(parts[cnt])))) {
+                    partsFill.push(parts[cnt++]);
+                } else {
+                    partsFill.push("");
                 }
             }
-            if (isPattern2) {
-                text = [...isPattern2][0];
-                text = text.substring(3, text.length - 3);
-            }
-            // console.log(label);
+            console.log(partsFill);
+
+            getLabelAndIndex(0, 0);
+            text[0] = partsFill[1];
+            getLabelAndIndex(1, 2);
+            text[1] = partsFill[3];
             
-            if (!((label[1] === -1 || label[0] === label[1]) &&
-                  (label[2] === -1 || label[0] === label[2]))) {
+
+            function getLabelAndIndex(idx: number, i: number) {
+                const nums = partsFill[i].split(".");
+                label[idx] = parseInt(nums[0]);
+                if (nums.length > 1) {
+                    index[idx] = parseInt(nums[1]);
+                }
+            }
+            
+            const info = new ReplaceInfo(label, index, text);
+            console.log(info);
+
+            if (!(label[1] === -1 || label[0] === label[1])) {
                 throw new Error((idx + 1) + "-th: Replace Language Left and Right label must be consistent.");
             }
-            result.push(new ReplaceInfo(label, index, text));
+
+            result.push(info);
         });
 
         return result.sort((a: ReplaceInfo, b: ReplaceInfo) => {
@@ -108,28 +106,21 @@ export class Replace {
                     const position = leftIndex === -1 ?
                         iterator.path_res[leftLabel].label_res[depth].position :// 输入无index
                         iterator.path_res[leftLabel].label_res[depth].subNode[leftIndex];// 输入有index
-                    
+
                     let replaceString = "";// 替换区域字符串
                     // 第一部分
+                    replaceString += info.text[0];
+                    // 第二部分
                     if (info.label[1] !== -1) {
                         const prevLabel = info.label[1];
                         const prevIndex = info.index[1];
                         const targetPosition = prevIndex === -1 ?
-                            iterator.path_res[prevLabel].label_res[depth].position :
-                            iterator.path_res[prevLabel].label_res[depth].subNode[prevIndex];
+                        iterator.path_res[prevLabel].label_res[depth].position :
+                        iterator.path_res[prevLabel].label_res[depth].subNode[prevIndex];
                         replaceString += source.substring(targetPosition.si, targetPosition.ei);
                     }
-                    // 第二部分, 文本
-                    replaceString += info.text;
                     // 第三部分
-                    if (info.label[2] !== -1) {
-                        const postLabel = info.label[2];
-                        const postIndex = info.index[2];
-                        const targetPosition = postIndex === -1 ?
-                            iterator.path_res[postLabel].label_res[depth].position :
-                            iterator.path_res[postLabel].label_res[depth].subNode[postIndex];
-                        replaceString += source.substring(targetPosition.si, targetPosition.ei);
-                    }
+                    replaceString += info.text[1];
 
                     // 替换区域之前
                     result += source.substring(pos, position.si);
@@ -147,7 +138,7 @@ export class Replace {
                     console.log(err);
                     return;
                 }
-                console.log("[callback] " + path + " write success");
+                vscode.window.showInformationMessage(path + " replace success");
             });
         }
     }
@@ -165,7 +156,7 @@ class ReplaceInfo {
     constructor(
         public label: number[],
         public index: number[],
-        public text: string,
+        public text: string[],
     ) {
     }
 }

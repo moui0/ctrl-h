@@ -29,7 +29,7 @@ export class Query {
         if (stderr === "No matching results.\n") {
             throw new Error(stderr);
         } else if (stderr !== "") {
-            throw new Error("Query Language syntax error: " + stderr);
+            throw new Error("Query Language or Source Code syntax error: " + stderr);
             
         }
     }

@@ -53,7 +53,6 @@ export function activate(context: vscode.ExtensionContext) {
         });
         panel.onDidDispose(
             () => {
-
             },
             null,
         );

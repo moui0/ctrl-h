@@ -7,19 +7,14 @@ import { FileItem, ResultItem, ResultProvider } from "./resultProvider";
 var treeView: vscode.TreeView<FileItem | ResultItem>;
 var provider: ResultProvider;
 
-const normal = vscode.window.createTextEditorDecorationType(
-    {
-        backgroundColor: new vscode.ThemeColor('editor.background'),
-    },
-);
 const highlight = vscode.window.createTextEditorDecorationType(
     {
-        backgroundColor: new vscode.ThemeColor('editor.findMatchHighlightBackground'),
+        backgroundColor: new vscode.ThemeColor("editor.findMatchHighlightBackground"),
     },
 );
 const selection = vscode.window.createTextEditorDecorationType(
     {
-        backgroundColor: new vscode.ThemeColor('editor.findMatchBackground'),
+        backgroundColor: new vscode.ThemeColor("editor.selectionBackground"),
     },
 );
 
@@ -63,15 +58,18 @@ export async function runHander(targetLanguage: string, sourceCodePath: string, 
 }
 
 function highlights(item: FileItem | ResultItem, provider: ResultProvider) {
-    let currentRange = item instanceof ResultItem ? item.localtion : item.results[0].localtion;
+    let currentRange = item instanceof ResultItem ? item.localtion.range : item.results[0].localtion.range;
     const uri = item instanceof ResultItem ? item.file.uri : item.uri;
     const ranges = provider.getEditorHighlightRanges(uri);
 
+    const idx = ranges?.indexOf(currentRange);
+    if (idx !== undefined) {
+        ranges?.splice(idx, 1);
+    }
+
     let editor = vscode.window.activeTextEditor;
     if (editor && ranges) {
-        editor.setDecorations(normal, ranges);
         editor.setDecorations(highlight, ranges);
-        editor.setDecorations(normal, [currentRange]);
         editor.setDecorations(selection, [currentRange]);
     }
 }
@@ -83,7 +81,7 @@ function navigation(item: FileItem | ResultItem) {
         'vscode.open',
         fileItem.uri,
         {
-            selection: new vscode.Selection(location.range.start, location.range.end),
+            selection: new vscode.Selection(location.range.start, location.range.start),
         }
     );
 }
