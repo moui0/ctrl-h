@@ -2,13 +2,20 @@
     "name": "ctrl-h",
     "displayName": "Ctrl-H",
     "description": "",
-    "version": "0.0.1",
+    "version": "0.0.3",
     "engines": {
         "vscode": "^1.67.0"
     },
     "categories": [
         "Other"
     ],
+    "repository": {
+        "url": "https://github.com/moui66744/ctrl-h"
+    },
+    "author": {
+        "name": "moui66744"
+    },
+    "publisher": "moui66744",
     "activationEvents": [
         "onView:result-view.tree",
         "onCommand:ctrl-h-webview",

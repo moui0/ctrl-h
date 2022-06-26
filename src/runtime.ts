@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as vscode from "vscode";
-import { Query } from "./query";
+import { jsonPath, Query } from "./query";
 import { Replace } from "./replace";
 import { FileItem, ResultItem, ResultProvider } from "./resultProvider";
 
@@ -28,7 +28,7 @@ export async function runHander(targetLanguage: string, sourceCodePath: string, 
     }
     
     // parse query result into JSON
-    const queryResult = fs.readFileSync(__dirname + "/../src/lib/out/res.json").toString();
+    const queryResult = fs.readFileSync(jsonPath).toString();
     const queryResultJSON = JSON.parse(queryResult);
 
     // tree view

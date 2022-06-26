@@ -2,7 +2,7 @@
 
 A structural code search and replace VSCode extension.
 
-![demo](demo.gif)
+![demo](https://github.com/moui66744/ctrl-h/blob/main/demo.gif)
 
 ### Application
 
@@ -11,7 +11,7 @@ A structural code search and replace VSCode extension.
 - code instrumentation
 - code equivalent substitution
 
-For specific examples, see [Demo](./demo.md).
+For specific examples, see [Demo](https://github.com/moui66744/ctrl-h/blob/main/demo.md).
 
 ### Grammar
 

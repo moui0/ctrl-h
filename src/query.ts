@@ -2,8 +2,8 @@ import * as fs from "fs";
 import * as vscode from "vscode";
 import * as path from "path";
 
-var jarPath = path.normalize(__dirname + "/../src/lib/ctrl-h.jar");
-var jsonPath = path.normalize(__dirname + "/../src/lib/out/res.json");
+export var jarPath = path.normalize(__dirname + "/../lib/ctrl-h.jar");
+export var jsonPath = path.normalize(__dirname + "/../lib/out/res.json");
 
 export class Query {
     private queryLanguage: string = "''";

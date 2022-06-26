@@ -17,47 +17,20 @@ export class Replace {
         const replaceLines = this.splitIntoLines();
         let result: ReplaceInfo[] = [];
         replaceLines.forEach((line, idx, array) => {
-            if (line.match(/\[\d+(\.\d+)?\]=>(""".*""")?(##)?(\[\d+(\.\d+)?\])?(##)?(""".*""")?/g) === null) {
+            const regex = /\[(?<label0>\d+)(\.(?<index0>\d+))?\]=>("""(?<text0>.*?)""")?(##)?(\[(?<label1>\d+)(\.(?<index1>\d+))?\])?(##)?("""(?<text1>.*?)""")?/g;
+            let matches = regex.exec(line);
+            if (matches === null || matches.groups === undefined) {
                 throw new Error((idx + 1) + "-th: Replace Language mismatches pattern.");
             }
-            // TODO: 替换语言检查：
-            // 1. 左部和右部label相等
-            // TODO: 2. label在范围内
-            // TODO: 3. index在范围内
 
-            let label = [-1, -1], index = [-1, -1];
-            let text = ["", ""];
+            const label = [Number.parseInt(matches.groups.label0), Number.parseInt(matches.groups.label1)];
+            const index = [Number.parseInt(matches.groups.index0), Number.parseInt(matches.groups.index1)];
+            const text = [matches.groups.text0, matches.groups.text1];
 
-            const parts = line.split(/=>|"""|##|\[|\]/g).filter(s => s && s.trim());
-            const partsFill: string[] = [];
-            let cnt = 0;
-            for (let i = 0; i < 4; i++) {
-                if (cnt < parts.length && (i % 2 === 0) === (!isNaN(Number(parts[cnt])))) {
-                    partsFill.push(parts[cnt++]);
-                } else {
-                    partsFill.push("");
-                }
-            }
-            console.log(partsFill);
-
-            getLabelAndIndex(0, 0);
-            text[0] = partsFill[1];
-            getLabelAndIndex(1, 2);
-            text[1] = partsFill[3];
-            
-
-            function getLabelAndIndex(idx: number, i: number) {
-                const nums = partsFill[i].split(".");
-                label[idx] = parseInt(nums[0]);
-                if (nums.length > 1) {
-                    index[idx] = parseInt(nums[1]);
-                }
-            }
-            
             const info = new ReplaceInfo(label, index, text);
-            console.log(info);
+            // console.log(info);
 
-            if (!(label[1] === -1 || label[0] === label[1])) {
+            if (!isNaN(label[1]) && label[0] !== label[1]) {
                 throw new Error((idx + 1) + "-th: Replace Language Left and Right label must be consistent.");
             }
 
@@ -97,30 +70,41 @@ export class Replace {
 
             // 遍历label的深度, 各label深度应该是相同的
             // 计算最大深度, 假设label的索引 == label
+            console.log(1);
             const maxDepth = iterator.path_res[replaceInfo[0].label[0]].label_res.length;
+            console.log(2);
+            
             for (let depth = 0; depth < maxDepth; depth++) {
                 // 遍历左部
                 for (const info of replaceInfo) {
                     const leftLabel = info.label[0];
                     const leftIndex = info.index[0];
-                    const position = leftIndex === -1 ?
+                    console.log(3);
+                    
+                    const position = isNaN(leftIndex) ?
                         iterator.path_res[leftLabel].label_res[depth].position :// 输入无index
                         iterator.path_res[leftLabel].label_res[depth].subNode[leftIndex];// 输入有index
+                    console.log(4);
+                    
 
                     let replaceString = "";// 替换区域字符串
                     // 第一部分
-                    replaceString += info.text[0];
+                    replaceString += info.text[0] === undefined ? "" : info.text[0];
                     // 第二部分
-                    if (info.label[1] !== -1) {
+                    if (!isNaN(info.label[1])) {
                         const prevLabel = info.label[1];
                         const prevIndex = info.index[1];
-                        const targetPosition = prevIndex === -1 ?
-                        iterator.path_res[prevLabel].label_res[depth].position :
-                        iterator.path_res[prevLabel].label_res[depth].subNode[prevIndex];
+                        console.log(5);
+                        
+                        const targetPosition = isNaN(prevIndex) ?
+                            iterator.path_res[prevLabel].label_res[depth].position :
+                            iterator.path_res[prevLabel].label_res[depth].subNode[prevIndex];
+                        console.log(6);
+                        
                         replaceString += source.substring(targetPosition.si, targetPosition.ei);
                     }
                     // 第三部分
-                    replaceString += info.text[1];
+                    replaceString += info.text[1] === undefined ? "" : info.text[1];
 
                     // 替换区域之前
                     result += source.substring(pos, position.si);
@@ -145,7 +129,7 @@ export class Replace {
 
     splitIntoLines() {
         this.replaceLanguage = this.replaceLanguage.replace(/\n/g, "");
-        this.replaceLanguage = [...this.replaceLanguage.matchAll(/[^\s"]+|"""[^"]*"""/g)].join("");
+        this.replaceLanguage = [...this.replaceLanguage.matchAll(/""".*?"""|[^(\s|""")]+/g)].join("");
         const replaceLines = this.replaceLanguage.split("$");
         replaceLines.pop();
         return replaceLines;
