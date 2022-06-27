@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as vscode from "vscode";
 import * as path from "path";
+import { performance } from "perf_hooks";
 
 export var jarPath = path.normalize(__dirname + "/../lib/ctrl-h.jar");
 export var jsonPath = path.normalize(__dirname + "/../lib/out/res.json");
@@ -25,7 +26,11 @@ export class Query {
             + " -d " + jsonPath
             + " -l " + this.targetLanguage
             ;
+        const start = performance.now();
         const { stdout, stderr } = await exec(cmd);
+        const end = performance.now();
+        vscode.window.showInformationMessage("The program execution time: " + (end - start) + "ms.");
+        
         if (stderr === "No matching results.\n") {
             throw new Error(stderr);
         } else if (stderr !== "") {

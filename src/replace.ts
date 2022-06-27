@@ -28,7 +28,7 @@ export class Replace {
             const text = [matches.groups.text0, matches.groups.text1];
 
             const info = new ReplaceInfo(label, index, text);
-            // console.log(info);
+            console.log(info);
 
             if (!isNaN(label[1]) && label[0] !== label[1]) {
                 throw new Error((idx + 1) + "-th: Replace Language Left and Right label must be consistent.");
@@ -70,22 +70,17 @@ export class Replace {
 
             // 遍历label的深度, 各label深度应该是相同的
             // 计算最大深度, 假设label的索引 == label
-            console.log(1);
             const maxDepth = iterator.path_res[replaceInfo[0].label[0]].label_res.length;
-            console.log(2);
             
             for (let depth = 0; depth < maxDepth; depth++) {
                 // 遍历左部
                 for (const info of replaceInfo) {
                     const leftLabel = info.label[0];
                     const leftIndex = info.index[0];
-                    console.log(3);
                     
                     const position = isNaN(leftIndex) ?
                         iterator.path_res[leftLabel].label_res[depth].position :// 输入无index
                         iterator.path_res[leftLabel].label_res[depth].subNode[leftIndex];// 输入有index
-                    console.log(4);
-                    
 
                     let replaceString = "";// 替换区域字符串
                     // 第一部分
@@ -131,7 +126,6 @@ export class Replace {
         this.replaceLanguage = this.replaceLanguage.replace(/\n/g, "");
         this.replaceLanguage = [...this.replaceLanguage.matchAll(/""".*?"""|[^(\s|""")]+/g)].join("");
         const replaceLines = this.replaceLanguage.split("$");
-        replaceLines.pop();
         return replaceLines;
     }
 }
