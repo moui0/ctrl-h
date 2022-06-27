@@ -2,7 +2,7 @@
 
 A structural code search and replace VSCode extension.
 
-![demo](https://github.com/moui66744/ctrl-h/blob/main/demo.gif)
+![demo](https://raw.githubusercontent.com/moui66744/ctrl-h/main/demo.gif)
 
 ### Application
 
