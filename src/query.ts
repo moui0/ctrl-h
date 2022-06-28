@@ -7,25 +7,31 @@ export var jarPath = path.normalize(__dirname + "/../lib/ctrl-h.jar");
 export var jsonPath = path.normalize(__dirname + "/../lib/out/res.json");
 
 export class Query {
-    private queryLanguage: string = "''";
+    private queryLanguage: string = '""';
 
     constructor(
         public targetLanguage: string,
         public filePath: string,
         queryLanguage: string,
     ) {
-        this.queryLanguage = "'" + queryLanguage + "'";
+        this.queryLanguage = '"' + queryLanguage + '"';
+        if (process.platform === "win32") {
+            this.queryLanguage = this.queryLanguage.replace(/\n/g, "");
+        }
     }
     public async execQuery() {
         const util = require("util");
         const exec = util.promisify(require("child_process").exec);
-        // const childProcess = require('child_process');
-        const cmd = "java -jar " + jarPath
+        let cmd = "java -jar " + jarPath
             + " -p " + this.filePath
             + " -t " + this.queryLanguage
             + " -d " + jsonPath
             + " -l " + this.targetLanguage
             ;
+        if (process.platform === "win32") {
+            cmd = "cmd /c " + cmd;
+        }
+        // vscode.window.showErrorMessage(cmd);
         const start = performance.now();
         const { stdout, stderr } = await exec(cmd);
         const end = performance.now();

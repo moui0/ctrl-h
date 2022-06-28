@@ -102,6 +102,9 @@ export async function getSourceCodePath(targetLanguage: string) {
         }
     );
     if (path) {
+        if (process.platform === "win32") {
+            return path[0].path.substring(1);
+        }
         return path[0].path;
     }
 }
